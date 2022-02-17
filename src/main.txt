@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <driver/gpio.h>
+#include "esp_log.h"
+
+#define LED_ON  1
+#define LED_OFF 0
+#if defined(ESP32_C3_DEV_BOARD)
+  #define LED_BUILTIN_RED GPIO_NUM_3
+  #define LED_BUILTIN_GREEN GPIO_NUM_4
+  #define LED_BUILTIN_BLUE GPIO_NUM_5
+  #define LED_BUILTIN_COOL GPIO_NUM_19
+  #define LED_BUILTIN_WARM GPIO_NUM_18
+  #define LED_BUILTIN LED_BUILTIN_WARM
+#elif defined (ESP32_S3_DEV_KITC_1)
+   #include "led_strip.h"
+   #define LED_BUILTIN GPIO_NUM_48
+   static led_strip_t *pLedStrip;
+   void InitLed()
+   {
+      pLedStrip = led_strip_init(CONFIG_BLINK_LED_RMT_CHANNEL, CONFIG_BLINK_GPIO, 1);
+      /* Set all LED off to clear all pixels */
+      pLedStrip->clear(pLedStrip, 50);
+   }
+
+   void BlinkLed(bool fState)
+   {
+      /* If the addressable LED is enabled */
+      if (fState) {
+         /* Set the LED pixel using RGB from 0 (0%) to 255 (100%) for each color */
+         pLedStrip->set_pixel(pLedStrip, 0, 16, 16, 16);
+         /* Refresh the strip to send data */
+         pLedStrip->refresh(pLedStrip, 100);
+      } else {
+         /* Set all LED off to clear all pixels */
+         pLedStrip->clear(pLedStrip, 50);
+      }
+   }
+#else
+   #ifndef LED_BUILTIN
+      #define LED_BUILTIN 33 // ESP32-CAM
+   #endif
+#endif
+
+
+// extern "C" void app_main() 
+void app_main() 
+{
+   int nCount = 0;
+#if defined(ESP32_C3_DEV_BOARD)
+    gpio_reset_pin(LED_BUILTIN_RED);
+    gpio_set_direction(LED_BUILTIN_RED, GPIO_MODE_OUTPUT);    
+
+    gpio_reset_pin(LED_BUILTIN_GREEN);
+    gpio_set_direction(LED_BUILTIN_GREEN, GPIO_MODE_OUTPUT);    
+
+    gpio_reset_pin(LED_BUILTIN_BLUE);
+    gpio_set_direction(LED_BUILTIN_BLUE, GPIO_MODE_OUTPUT);    
+
+    gpio_reset_pin(LED_BUILTIN_COOL);
+    gpio_set_direction(LED_BUILTIN_COOL, GPIO_MODE_OUTPUT);    
+
+    gpio_reset_pin(LED_BUILTIN_WARM);
+    gpio_set_direction(LED_BUILTIN_WARM, GPIO_MODE_OUTPUT);    
+#elif defined (ESP32_S3_DEV_KITC_1)
+   InitLed();
+#else
+    gpio_reset_pin(LED_BUILTIN);
+    gpio_set_direction(LED_BUILTIN, GPIO_MODE_OUTPUT);    
+#endif
+
+    while (1)
+    {
+#if defined(ESP32_C3_DEV_BOARD)       
+      gpio_set_level(LED_BUILTIN, LED_ON);
+#elif defined (ESP32_S3_DEV_KITC_1)
+      BlinkLed(LED_ON);
+#endif      
+      printf("Hello World %d\n", nCount++);
+      fflush(stdout);
+      vTaskDelay(100/portTICK_RATE_MS);
+
+#if defined(ESP32_C3_DEV_BOARD)       
+     gpio_set_level(LED_BUILTIN, LED_OFF);
+#elif defined (ESP32_S3_DEV_KITC_1)
+      BlinkLed(LED_OFF);
+#endif      
+      vTaskDelay(1000/portTICK_RATE_MS);
+    }
+}
