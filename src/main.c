@@ -25,7 +25,7 @@ static const char *TAG = "ESP32_IDF_test";
 */
 #define BLINK_GPIO CONFIG_BLINK_GPIO
 
-// #ifdef CONFIG_BLINK_LED_RMT
+#ifdef CONFIG_BLINK_LED_RMT
 static led_strip_t *pStrip_a;
 int nCount = 0;
 
@@ -71,23 +71,23 @@ static void configure_led(void)
     pStrip_a->clear(pStrip_a, 10);
 }
 
-// #elif CONFIG_BLINK_LED_GPIO
+#elif CONFIG_BLINK_LED_GPIO
 
-// static void blink_led(void)
-// {
-//     /* Set the GPIO level according to the state (LOW or HIGH)*/
-//     gpio_set_level(BLINK_GPIO, s_led_state);
-// }
+static void blink_led(void)
+{
+    /* Set the GPIO level according to the state (LOW or HIGH)*/
+    gpio_set_level(BLINK_GPIO, s_led_state);
+}
 
-// static void configure_led(void)
-// {
-//     ESP_LOGI(TAG, "Example configured to blink GPIO LED!");
-//     gpio_reset_pin(BLINK_GPIO);
-//     /* Set the GPIO as a push/pull output */
-//     gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-// }
+static void configure_led(void)
+{
+    ESP_LOGI(TAG, "Example configured to blink GPIO LED!");
+    gpio_reset_pin(BLINK_GPIO);
+    /* Set the GPIO as a push/pull output */
+    gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
+}
 
-// #endif
+#endif
 
 void app_main(void)
 {
